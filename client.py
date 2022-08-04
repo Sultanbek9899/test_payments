@@ -1,5 +1,7 @@
-from abstract_client import AbstractInteractionClient
 from models import TransactionResponse
+from abstract_client import AbstractInteractionClient
+
+from aiohttp import BasicAuth
 
 class Client(AbstractInteractionClient):
     URL = "https://api.cloudpayments.ru/"
@@ -8,7 +10,7 @@ class Client(AbstractInteractionClient):
         self.public_token = public_token
         self.secret_id = secret_id
     
-    def charge(self, cryptogram, amount, currency, name, ip_address,
+    async def charge(self, cryptogram, amount, currency, name, ip_address,
                     invoice_id=None, description=None, account_id=None,
                     email=None, data=None, require_confirmation=False,
                     service_fee=None):
@@ -35,10 +37,14 @@ class Client(AbstractInteractionClient):
 
         if require_confirmation:
             url = self.URL + 'payments/cards/auth' 
+            auth = BasicAuth(self.public_token, self.secret_id)
+
+            response = await self.post(url=url, data = params, auth=auth)
         else:
             url = self.URL + 'payments/cards/charge'
-        response = self.post(url=url, data = params)
-
+            response = await self.post(url=url, data=data)
+        
+        
         if response['Success']:
             return TransactionResponse.dump(response['Model'])
         if response['Message']:
