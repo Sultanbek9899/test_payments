@@ -34,9 +34,9 @@ class Client(AbstractInteractionClient):
             params['JsonData'] = data
 
         if require_confirmation:
-            url = 'payments/cards/auth' 
+            url = self.URL + 'payments/cards/auth' 
         else:
-            url = 'payments/cards/charge'
+            url = self.URL + 'payments/cards/charge'
         response = self.post(url=url, data = params)
 
         if response['Success']:
